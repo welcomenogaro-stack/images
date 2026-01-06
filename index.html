@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9; /* change la couleur si tu veux */
+      background: #f9f9f9; 
       text-align: center;
       margin: 20px;
       color: #333;
@@ -24,11 +24,11 @@
       gap: 20px;
     }
 
-    /* Miniatures uniformes */
+    /* Miniatures plus grandes et crop centré */
     .gallery img {
-      width: 200px;         /* largeur fixe */
-      height: 150px;        /* hauteur fixe */
-      object-fit: cover;    /* crop centré pour éviter la déformation */
+      width: 300px;         /* largeur de la miniature */
+      height: 225px;        /* hauteur de la miniature */
+      object-fit: cover;    /* crop centré */
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -81,7 +81,7 @@
   </style>
 </head>
 <body>
-  <h1>Galerie automatique</h1>
+  <h1>Galerie</h1>
   <div class="gallery" id="gallery"></div>
 
   <div id="overlay">
@@ -91,10 +91,10 @@
   </div>
 
   <script>
-    // CONFIGURATION : change juste ces deux lignes
+    // CONFIGURATION : ton utilisateur GitHub et le dépôt
     const owner = "welcomenogaro-stack"; // ton nom GitHub
-    const repo = "images";  // le nom du dépôt
-    const folder = "images";      // le dossier contenant tes images
+    const repo = "images";                // nom du dépôt
+    const folder = "images";              // dossier contenant tes images
 
     const gallery = document.getElementById('gallery');
     const overlay = document.getElementById('overlay');
@@ -105,7 +105,7 @@
     let images = [];
     let currentIndex = 0;
 
-    // 1️⃣ Récupérer automatiquement toutes les images dans le dossier 'images/'
+    // Récupère automatiquement toutes les images dans le dossier 'images/'
     fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${folder}`)
       .then(res => res.json())
       .then(data => {
@@ -113,7 +113,6 @@
           .filter(f => f.type === "file" && /\.(png|jpg|jpeg|gif)$/i.test(f.name))
           .map(f => f.download_url);
 
-        // créer les miniatures
         images.forEach((src, i) => {
           const img = document.createElement('img');
           img.src = src;
@@ -124,7 +123,7 @@
       })
       .catch(err => console.error("Erreur API GitHub :", err));
 
-    // 2️⃣ Lightbox / overlay
+    // Lightbox / overlay
     function showOverlay(index) {
       currentIndex = index;
       overlayImg.src = images[index];
