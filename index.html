@@ -3,11 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <title>Mes images</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;       /* passe à la ligne si l'écran est petit */
+      justify-content: center;
+      gap: 20px;             /* espace entre les images */
+    }
+
+    .gallery img {
+      max-width: 300px;      /* limite largeur mais garde la résolution */
+      width: 100%;           /* image responsive */
+      height: auto;
+      border-radius: 8px;    /* coins arrondis */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    .gallery img:hover {
+      transform: scale(1.05); /* petit effet au survol */
+    }
+  </style>
 </head>
 <body>
   <h1>Mes Images</h1>
-<img src="chronologie-usa.png" alt="Chrono Usa">
-<img src="covid-lhistoire.png" alt="Covid Histoire">
-<img src="guerre-info.png" alt="Guerre Info">
+  <div class="gallery">
+    <img src="chronologie-usa.png" alt="Chrono Usa">
+    <img src="covid-lhistoire.png" alt="Covid Histoire">
+    <img src="guerre-info.png" alt="Guerre Info">
+  </div>
 </body>
 </html>
