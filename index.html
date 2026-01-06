@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Mes images</title>
+  <title>Mes Images</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,22 +18,63 @@
 
     .gallery {
       display: flex;
-      flex-wrap: wrap;       /* passe à la ligne si l'écran est petit */
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 20px;             /* espace entre les images */
+      gap: 20px;
     }
 
     .gallery img {
-      max-width: 300px;      /* limite largeur mais garde la résolution */
-      width: 100%;           /* image responsive */
+      max-width: 200px;  /* miniatures */
+      width: auto;
       height: auto;
-      border-radius: 8px;    /* coins arrondis */
+      border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
       transition: transform 0.3s;
     }
 
     .gallery img:hover {
-      transform: scale(1.05); /* petit effet au survol */
+      transform: scale(1.05);
+    }
+
+    /* Overlay */
+    #overlay {
+      position: fixed;
+      display: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #overlay img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+    }
+
+    /* Flèches */
+    .arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 50px;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      padding: 10px;
+      z-index: 1001;
+    }
+
+    #prev { left: 20px; }
+    #next { right: 20px; }
+
+    .arrow:hover {
+      color: #ddd;
     }
   </style>
 </head>
@@ -44,5 +85,60 @@
     <img src="covid-lhistoire.png" alt="Covid Histoire">
     <img src="guerre-info.png" alt="Guerre Info">
   </div>
+
+  <!-- overlay -->
+  <div id="overlay">
+    <div id="prev" class="arrow">&#10094;</div>
+    <img src="" alt="">
+    <div id="next" class="arrow">&#10095;</div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('overlay');
+    const overlayImg = overlay.querySelector('img');
+    const images = document.querySelectorAll('.gallery img');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+
+    let currentIndex = 0;
+
+    function showOverlay(index) {
+      currentIndex = index;
+      overlayImg.src = images[index].src;
+      overlayImg.alt = images[index].alt;
+      overlay.style.display = 'flex';
+    }
+
+    images.forEach((img, i) => {
+      img.addEventListener('click', () => showOverlay(i));
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.style.display = 'none';
+    });
+
+    prev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      overlayImg.src = images[currentIndex].src;
+      overlayImg.alt = images[currentIndex].alt;
+    });
+
+    next.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex + 1) % images.length;
+      overlayImg.src = images[currentIndex].src;
+      overlayImg.alt = images[currentIndex].alt;
+    });
+
+    // Optionnel : navigation au clavier
+    document.addEventListener('keydown', (e) => {
+      if (overlay.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') prev.click();
+        if (e.key === 'ArrowRight') next.click();
+        if (e.key === 'Escape') overlay.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
