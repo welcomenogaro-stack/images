@@ -2,91 +2,24 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Mes Images</title>
+  <title>Galerie automatique</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 20px;
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; margin: 20px; }
+    h1 { margin-bottom: 40px; color: #333; }
+    .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .gallery img { max-width: 200px; height: auto; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s; }
+    .gallery img:hover { transform: scale(1.05); }
 
-    h1 {
-      color: #333;
-      margin-bottom: 40px;
-    }
-
-    .gallery {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .gallery img {
-      max-width: 200px;  /* miniatures */
-      width: auto;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    .gallery img:hover {
-      transform: scale(1.05);
-    }
-
-    /* Overlay */
-    #overlay {
-      position: fixed;
-      display: none;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.85);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    #overlay img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 8px;
-    }
-
-    /* Flèches */
-    .arrow {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 50px;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-      padding: 10px;
-      z-index: 1001;
-    }
-
-    #prev { left: 20px; }
-    #next { right: 20px; }
-
-    .arrow:hover {
-      color: #ddd;
-    }
+    #overlay { position: fixed; display: none; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:1000; }
+    #overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+    .arrow { position: fixed; top: 50%; transform: translateY(-50%); font-size: 50px; color: white; cursor: pointer; padding: 10px; z-index: 1001; }
+    #prev { left: 20px; } #next { right: 20px; } .arrow:hover { color: #ddd; }
   </style>
 </head>
 <body>
-  <h1>Mes Images</h1>
-  <div class="gallery">
-    <img src="chronologie-usa.png" alt="Chrono Usa">
-    <img src="covid-lhistoire.png" alt="Covid Histoire">
-    <img src="guerre-info.png" alt="Guerre Info">
-  </div>
+  <h1>Galerie automatique</h1>
+  <div class="gallery" id="gallery"></div>
 
-  <!-- overlay -->
   <div id="overlay">
     <div id="prev" class="arrow">&#10094;</div>
     <img src="" alt="">
@@ -94,49 +27,56 @@
   </div>
 
   <script>
+    // CONFIGURATION : ton utilisateur GitHub et le nom du dépôt
+    const owner = "welcomenogaro-stack"; // remplace par ton nom GitHub
+    const repo = "images"; // remplace par le nom du dépôt
+    const folder = "images";      // dossier où sont les images
+
+    const gallery = document.getElementById('gallery');
     const overlay = document.getElementById('overlay');
     const overlayImg = overlay.querySelector('img');
-    const images = document.querySelectorAll('.gallery img');
     const prev = document.getElementById('prev');
     const next = document.getElementById('next');
 
+    let images = [];
     let currentIndex = 0;
 
+    // 1️⃣ Récupérer automatiquement toutes les images du dossier 'images/' via l'API GitHub
+    fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${folder}`)
+      .then(res => res.json())
+      .then(data => {
+        images = data
+          .filter(f => f.type === "file" && /\.(png|jpg|jpeg|gif)$/i.test(f.name))
+          .map(f => f.download_url);
+
+        // créer les miniatures
+        images.forEach((src, i) => {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = `Image ${i+1}`;
+          img.addEventListener('click', () => showOverlay(i));
+          gallery.appendChild(img);
+        });
+      })
+      .catch(err => console.error("Erreur API GitHub :", err));
+
+    // 2️⃣ Fonctions lightbox
     function showOverlay(index) {
       currentIndex = index;
-      overlayImg.src = images[index].src;
-      overlayImg.alt = images[index].alt;
+      overlayImg.src = images[index];
       overlay.style.display = 'flex';
     }
 
-    images.forEach((img, i) => {
-      img.addEventListener('click', () => showOverlay(i));
-    });
+    overlay.addEventListener('click', e => { if(e.target === overlay) overlay.style.display = 'none'; });
+    prev.addEventListener('click', e => { e.stopPropagation(); currentIndex = (currentIndex-1+images.length)%images.length; overlayImg.src = images[currentIndex]; });
+    next.addEventListener('click', e => { e.stopPropagation(); currentIndex = (currentIndex+1)%images.length; overlayImg.src = images[currentIndex]; });
 
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.style.display = 'none';
-    });
-
-    prev.addEventListener('click', (e) => {
-      e.stopPropagation();
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-      overlayImg.src = images[currentIndex].src;
-      overlayImg.alt = images[currentIndex].alt;
-    });
-
-    next.addEventListener('click', (e) => {
-      e.stopPropagation();
-      currentIndex = (currentIndex + 1) % images.length;
-      overlayImg.src = images[currentIndex].src;
-      overlayImg.alt = images[currentIndex].alt;
-    });
-
-    // Optionnel : navigation au clavier
-    document.addEventListener('keydown', (e) => {
+    // navigation au clavier
+    document.addEventListener('keydown', e => {
       if (overlay.style.display === 'flex') {
-        if (e.key === 'ArrowLeft') prev.click();
-        if (e.key === 'ArrowRight') next.click();
-        if (e.key === 'Escape') overlay.style.display = 'none';
+        if(e.key==='ArrowLeft') prev.click();
+        if(e.key==='ArrowRight') next.click();
+        if(e.key==='Escape') overlay.style.display='none';
       }
     });
   </script>
